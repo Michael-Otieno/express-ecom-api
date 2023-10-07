@@ -2,6 +2,17 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
 const User = require("../models/User");
 
+
+// authMiddleware.js
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    next()
+    return;
+  }
+  res.status(401).json({ message: 'Unauthorized' });
+}
+
+
 verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
 
@@ -21,6 +32,7 @@ verifyToken = (req, res, next) => {
     next();
   });
 };
+
 
 
 isAdmin = (req, res, next) => {
@@ -85,6 +97,6 @@ isAdmin = (req, res, next) => {
     verifyToken: verifyToken,
     isAdmin: isAdmin,
     isModerator: isModerator,
-    isModeratorOrAdmin: isModeratorOrAdmin
+    isModeratorOrAdmin: isModeratorOrAdmin,ensureAuthenticated
   };
   module.exports = authJwt;

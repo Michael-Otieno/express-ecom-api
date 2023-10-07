@@ -7,7 +7,17 @@ const Role = require("./models/Role");
 const Product = require("./models/Product");
 const Category = require("./models/Category");
 
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const session = require('express-session');
+const Sequelize = require('sequelize');
+const bodyParser = require('body-parser');
+
+const bcrypt = require('bcrypt');
+
+
 const categoryRoutes = require("./routes/CategoryRoutes");
+const { ensureAuthenticated } = require("./middleware/authJwt");
 
 const app = express();
 var corsOptions = { origin: "http://localhost:8081" };
@@ -17,10 +27,54 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome." });
+// Define the validPassword method for user authentication
+User.prototype.validPassword = function (password) {
+  return bcrypt.compareSync(password, this.password);
+};
+
+// Configure Passport.js for user authentication
+passport.use(new LocalStrategy(
+  function (username, password, done) {
+    User.findOne({ where: { username: username } }).then(user => {
+      if (!user || !user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect username or password' });
+      }
+      return done(null, user);
+    }).catch(err => {
+      return done(err);
+    });
+  }
+));
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
 });
-app.use('/categories',categoryRoutes)
+
+passport.deserializeUser(function (id, done) {
+  User.findByPk(id).then(user => {
+    done(null, user);
+  }).catch(err => {
+    done(err);
+  });
+});
+
+// Configure express-session
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+}));
+
+// Initialize Passport and use sessions for authentication
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Parse JSON requests
+app.use(bodyParser.json());
+
+
+app.get("/", (req, res) => {res.json({ message: "Welcome." })});
+app.use('/categories',ensureAuthenticated,categoryRoutes)
 
 // routes
 require("./routes/auth.routes")(app);
