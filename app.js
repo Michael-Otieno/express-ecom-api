@@ -17,6 +17,8 @@ const bcrypt = require('bcrypt');
 
 
 const categoryRoutes = require("./routes/CategoryRoutes");
+const productRoutes = require("./routes/product.routes");
+
 const { ensureAuthenticated } = require("./middleware/authJwt");
 
 const app = express();
@@ -75,6 +77,8 @@ app.use(bodyParser.json());
 
 app.get("/", (req, res) => {res.json({ message: "Welcome." })});
 app.use('/categories',ensureAuthenticated,categoryRoutes)
+app.use('/products',ensureAuthenticated,productRoutes)
+
 
 // routes
 require("./routes/auth.routes")(app);
