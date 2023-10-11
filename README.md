@@ -47,7 +47,7 @@ http://localhost:8080/
 
 
 ## Use
-- We can use [Postman](https://www.postman.com/) for testing the Rest API
+- Use [Postman](https://www.postman.com/) for testing the Rest API
 
 ## License
 * [![License](https://img.shields.io/packagist/l/loopline-systems/closeio-api-wrapper.svg)](https://github.com/michael-otieno/Picture-Globe/blob/master/LICENSE)  
